@@ -29,23 +29,109 @@ variable {α : Type*}
 variable (A B C : Set α)
 
 /-
+TODO: Arreglar estos, medio que quedaron feuchos P2/P3
+-/
+
+/-
   Proof strategy for P1 is:
 -/
 
-lemma P1 : (B ∪ C) ⊆ A ↔ B ⊆ A ∧ C ⊆ A := by sorry
-
+lemma P1 : (B ∪ C) ⊆ A ↔ B ⊆ A ∧ C ⊆ A := by
+  constructor
+  · intro h
+    constructor
+    · intro x hx
+      apply h
+      left
+      exact hx
+    · intro x hx
+      apply h
+      right
+      exact hx
+  · intro ⟨h1, h2⟩ x hx
+    cases hx
+    · apply h1
+      exact h
+    · apply h2
+      exact h
 
 /-
   Proof strategy for P2 is:
 -/
 
-theorem P2 : A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) := by sorry
+theorem P2 : A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) := by
+  ext
+  constructor
+  · intro ⟨h1, h2⟩
+    cases h2
+    · left
+      exact ⟨h1, h⟩
+    · right
+      exact ⟨h1, h⟩
+  · intro h1
+    cases h1
+    · obtain ⟨h1, h2⟩ := h
+      constructor
+      · exact h1
+      · left
+        exact h2
+    · obtain ⟨h1, h2⟩ := h
+      constructor
+      · exact h1
+      · right
+        exact h2
 
 /-
   Proof strategy for P3 is:
 -/
 
-theorem P3 : (A ∪ B) ∩ (A ∪ C) ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) ∪ (B ∩ C) := by sorry
+theorem P3 : (A ∪ B) ∩ (A ∪ C) ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) ∪ (B ∩ C) := by
+  ext x
+  constructor
+  · intro ⟨⟨h1, h2⟩, h3⟩
+    cases h1
+    · cases h3
+      left
+      left
+      exact ⟨h, h_1⟩
+      left
+      right
+      exact ⟨h, h_1⟩
+    · cases h2
+      left
+      left
+      exact ⟨h_1, h⟩
+      right
+      exact ⟨h, h_1⟩
+  · intro h
+    cases h
+    · cases h_1
+      · obtain ⟨ha, hb⟩ := h
+        constructor
+        · constructor
+          · left
+            exact ha
+          · left
+            exact ha
+        · left
+          exact hb
+      · obtain ⟨ha, hc⟩ := h
+        constructor
+        · constructor
+          all_goals
+          left
+          exact ha
+        · right
+          exact hc
+    · obtain ⟨hb, hc⟩ := h_1
+      constructor
+      · constructor
+        · right
+          exact hb
+        · right
+          exact hc
+      · right
+        exact hc
 
 -- The set difference operation is denoted by B \ A
 -- This can be simplified using rw [mem_diff] where
@@ -63,12 +149,27 @@ theorem P3 : (A ∪ B) ∩ (A ∪ C) ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) ∪
 theorem P4 : (∃ X : Set α, A ∪ X = B) ↔ A ⊆ B := by
   constructor
   · -- Forward direction: if there exists X such that A ∪ X = B, then A ⊆ B
-    sorry
+    intro h
+    obtain ⟨x, hx⟩ := h
+    rw [← hx]
+    apply subset_union_left
   · -- Reverse direction: if A ⊆ B, then there exists X such that A ∪ X = B
     intro h           -- "Assume A ⊆ B"
     use B \ A         -- "Let X = B \ A"
     ext x
-    sorry
+    constructor
+    · intro h2
+      cases h2
+      apply (h h_1)
+      rw [mem_diff] at h_1
+      exact h_1.left
+    · intro h2
+      by_cases h3: (x ∈ A)
+      · left
+        exact h3
+      · right
+        rw [mem_diff]
+        exact ⟨h2, h3⟩
 end
 
 section
@@ -101,6 +202,13 @@ def IsDisjoint (A B: Finset α) : Prop := A ∩ B = ∅
 theorem P5 (U : Finset α) (A B : Finset α)
 (hAB : IsDisjoint A B) (hcard : #A = #B) (htotal : A ∪ B = U) : IsEven (#U) := by
   -- Hint: First prove the following claim:
-  have AB_eq: #(A ∪ B) = #A + #B := by sorry
+  have AB_eq: #(A ∪ B) = #A + #B := by
+    rw [card_union, hAB]
+    nth_rw 3 [card_eq_zero.mpr]
+    repeat rfl
+
   -- Then use AB_eq to finish the proof
-  sorry
+  use #A
+  rw [Nat.two_mul]
+  nth_rw 2 [hcard]
+  rw [← AB_eq, htotal]

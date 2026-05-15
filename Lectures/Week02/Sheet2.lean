@@ -50,7 +50,13 @@ example: ∀ x ∈ A ∪ B, x ∈ A ∪ B ∪ C:= by
 #check mem_union
 #check subset_def
 
-lemma my_union_subset_imp :  A ⊆ C ∧ B ⊆ C → A ∪ B ⊆ C := by sorry
+lemma my_union_subset_imp :  A ⊆ C ∧ B ⊆ C → A ∪ B ⊆ C := by
+  intro ⟨h1, h2⟩ x hx
+  cases hx
+  apply h1
+  assumption
+  apply h2
+  assumption
 
 -- Extend my_union_subset_imp to my_union_subset_iff
 -- You are allowed to use *only* these two lemmas.
@@ -76,7 +82,13 @@ lemma my_union_subset_iff:  A ⊆ C ∧ B ⊆ C ↔ A ∪ B ⊆ C := by
   exact hx
 
 -- Exercise 6: you may want to use my_union_subset_iff
-example : B ⊆ A → C ⊆ A → B ∪ C ⊆ A := by sorry
+example : B ⊆ A → C ⊆ A → B ∪ C ⊆ A := by
+  intro h1 h2 x hx
+  cases hx
+  apply h1
+  assumption
+  apply h2
+  assumption
 
 /-! New tactics
  * `ext`  -- extensionality. Proving that two functions are identical. Since sets are functions in Lean, `ext` can be used to prove set equality.
@@ -104,4 +116,13 @@ lemma absorption_law: A ∩ (A ∪ B) = A := by
       exact a
 
 -- Exercise 7
-lemma union_comm : A ∪ B = B ∪ A := by sorry
+lemma union_comm : A ∪ B = B ∪ A := by
+  ext x
+  constructor
+  all_goals
+  · intro hx
+    cases hx
+    right
+    assumption
+    left
+    assumption
