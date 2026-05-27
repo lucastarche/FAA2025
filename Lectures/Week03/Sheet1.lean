@@ -42,7 +42,12 @@ def I2 : ℕ → ℕ
   | n + 1 => I2 n + 2
 
 #eval [I2 0, I2 1, I2 2]
-example (n:ℕ): I2 n = 2*n := by sorry
+example (n:ℕ): I2 n = 2*n := by
+  induction' n with n ih
+  · rfl
+  · unfold I2
+    rw [ih]
+    rfl
 
 -- Another example
 example (n:ℕ): Even (I2 n) := by
@@ -59,7 +64,21 @@ example (n:ℕ): Even (I2 n) := by
     omega
 
 -- Exercise 2
-theorem even_or_odd (n : ℕ) : (∃ k, n = 2*k) ∨ (∃ k, n = 2*k+1) := by sorry
+theorem even_or_odd (n : ℕ) : (∃ k, n = 2*k) ∨ (∃ k, n = 2*k+1) := by
+  induction' n with n ih
+  · left
+    use 0
+  · cases ih
+    · rename_i h
+      obtain ⟨k, hk⟩ := h
+      right
+      use k
+      linarith
+    · rename_i h
+      obtain ⟨k, hk⟩ := h
+      left
+      use (k+1)
+      linarith
 
 def S : ℕ → ℕ
   | 0 => 0
@@ -72,9 +91,18 @@ def S : ℕ → ℕ
 #check mul_comm
 
 -- Exercise 3
-lemma Sn_two (n : ℕ) : 2*(S n) = n * (n + 1)  := by sorry
+lemma Sn_two (n : ℕ) : 2*(S n) = n * (n + 1) := by
+  induction' n with n ih
+  · trivial
+  · unfold S
+    ring_nf
+    nth_rw 1 [mul_comm]
+    rw [ih]
+    ring
 
-example (n : ℕ) : (S n) = n * (n + 1)/2  := by sorry
+example (n : ℕ) : (S n) = n * (n + 1)/2 := by
+  rw [← Sn_two, mul_comm]
+  omega
 
 -- It is much easier to work with type ℚ
 -- Example
@@ -115,7 +143,18 @@ example : ∀ n ≥ 5, 2 ^ n > n ^ 2 := by
     exact power_two_ih n ih h
 
 -- Exercise 4
-lemma le_fact (n : ℕ) : 1 ≤ (n)! := by sorry
+lemma le_fact (n : ℕ) : 1 ≤ (n)! := by
+  induction' n with n hn
+  · rw [factorial]
+  · rw [factorial]
+    grw [← hn]
+    simp
 
 -- Exercise 5
-example (n : ℕ) : 2^n ≤ (n+1)! := by sorry
+example (n : ℕ) : 2^n ≤ (n+1)! := by
+  induction' n with n hn
+  · trivial
+  · rw [factorial, pow_succ]
+    grw [← hn]
+    ring_nf
+    simp

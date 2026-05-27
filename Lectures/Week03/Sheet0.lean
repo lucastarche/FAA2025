@@ -48,13 +48,14 @@ example {a b x c d : ℝ} : x ^ 2 * a + c ≤ x ^ 2 * b + d := by
 
 -- Example on grw/rel/gcongr
 example {a b x c d : ℝ} (h1 : a ≤ b) (h2 : c ≤ d) :
-    x ^ 2 * a + c ≤ x ^ 2 * b + d := by sorry
+    x ^ 2 * a + c ≤ x ^ 2 * b + d := by
+    gcongr
 
 example (a b c d: ℝ)(h₁ : a < b) (h₂ : b ≤ c) : a + d ≤ c + d := by
   grw [h₁ ,h₂]
 
 example (a b c d: ℝ)(h₁ : a < b) (h₂ : b ≤ c) : a + d ≤ c + d := by
-  grw [← h₂,← h₁ ]
+  grw [← h₂, ← h₁]
 
 -- Example
 theorem power_two_ih (n : ℕ) (ih : 5 ≤ n) (h : 2 ^ n > n ^ 2) : 2 ^ (n + 1) > (n + 1) ^ 2 := by
@@ -78,8 +79,13 @@ theorem power_two_ih_alt (n : ℕ) (ih : 5 ≤ n) (h : 2 ^ n > n ^ 2) : 2 ^ (n +
 
 -- Exercise 1
 -- try without omega
-theorem power_two_linear (n : ℕ) (ih : 3 ≤ n) (h : 2*n < 2^n) : 2*(n+1) < 2^(n+1) := by sorry
+theorem power_two_linear (n : ℕ) (ih : 3 ≤ n) (h : 2*n < 2^n) : 2*(n+1) < 2^(n+1) := by
+  grw [mul_add_one, h, Nat.pow_add_one']
+  linarith
+
 
 -- Exericse 2
 -- prove this without omega
-example (n:ℕ ) (h: 5 ≤ n): 1 + n * 2 < 5*n := by sorry
+example (n:ℕ ) (h: 5 ≤ n): 1 + n * 2 < 5*n := by
+  have h2: 1 <= n := by linarith
+  linarith
