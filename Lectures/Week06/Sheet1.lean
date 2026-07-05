@@ -48,7 +48,7 @@ def list2 := [3,5,20]
 #eval [1,2,3,4,5].drop 3
 
 -- Merge sort
-def MergeSort (x : List ℕ ) : List ℕ  :=
+def MergeSort (x : List ℕ) : List ℕ :=
 if x.length < 2 then x
 else
   let mid := x.length/2
@@ -58,9 +58,22 @@ else
   let l2' := MergeSort l2
   Merge l1' l2'
 
+#eval MergeSort [5, 4, 3, 1, 2, 7, 6]
+
 -- Let's assume sorted_merge for now; we will prove sorted_merge in the next sheet
 theorem sorted_merge(l1 l2 : List ℕ)(hxs: Sorted l1) (hys: Sorted l2): Sorted (Merge l1 l2) := by sorry
 
 #check MergeSort.induct
 -- Exercise 1.1: use sorted_merge theorem to prove that MergeSort outputs a sorted list
-theorem MS_Sorted (xs : List ℕ ): Sorted (MergeSort xs) := by sorry
+theorem MS_Sorted (xs : List ℕ): Sorted (MergeSort xs) := by
+  fun_induction MergeSort xs
+  · cases x
+    · exact Sorted.nil
+    · simp at h
+      have h: tail.length = 0 := by omega
+      simp at h
+      rw [h]
+      exact Sorted.single head
+  · apply sorted_merge -- <;> trivial
+    · exact ih2
+    · exact ih1

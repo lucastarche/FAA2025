@@ -59,17 +59,41 @@ theorem mem_either_merge_auto (xs ys : List ℕ) (z : ℕ)
 -- Let's break down the proof and see how to prove this by ``hand``.
 -- Exercise 2.1: try to prove this using either recursion or functional induction (don't use grind on the inductive step)
 theorem mem_either_merge (xs ys : List ℕ) (z : ℕ)
-  (hz : z ∈ Merge xs ys) : z ∈ xs ∨ z ∈ ys := by sorry
+  (hz : z ∈ Merge xs ys) : z ∈ xs ∨ z ∈ ys := by
+  fun_induction Merge xs ys <;> simp_all
+  · rcases hz with head | tail
+    · exact Or.inl (Or.inl head)
+    · rcases ih1 tail with h1 | h2
+      · exact Or.inl (Or.inr h1)
+      · exact Or.inr h2
+  · rcases hz with head | tail
+    · exact Or.inr (Or.inl head)
+    · rcases ih1 tail with h1 | h2
+      · exact Or.inl h1
+      · exact Or.inr (Or.inr h2)
 
 -- Exercise 2.2: use mem_either_merge to prove the following.
 #check mem_either_merge
 theorem min_all_merge (x : ℕ) (xs ys: List ℕ)
- (hxs : x.MinOfList xs) (hys : x.MinOfList ys) : x.MinOfList (Merge xs ys):= by sorry
+ (hxs : x.MinOfList xs) (hys : x.MinOfList ys) : x.MinOfList (Merge xs ys) := by
+  sorry
 
 -- We are ready to prove the main sorted merge.
 -- discuss a proof
 
-theorem sorted_merge(l1 l2 : List ℕ)(hxs: Sorted l1) (hys: Sorted l2): Sorted (Merge l1 l2) := by sorry
+theorem sorted_merge(l1 l2 : List ℕ)(hxs: Sorted l1) (hys: Sorted l2): Sorted (Merge l1 l2) := by
+  fun_induction Merge <;> simp_all
+  · apply Sorted.cons_min
+    · apply min_all_merge
+      apply sorted_min hxs
+      apply sorted_min at hys
+      intro z hz
+      trans y ; exact h
+      aesop
+    · apply ih1
+      apply sorted_suffix hxs
+  · -- Alta paja escribir todo dos veces
+    grind [Sorted.cons_min, min_all_merge, sorted_min, sorted_suffix]
 
 -- c.f. with recursive proofs.
 theorem sorted_merge_rec(l1 l2 : List ℕ)(hxs: Sorted l1) (hys: Sorted l2): Sorted (Merge l1 l2) := by
@@ -104,3 +128,19 @@ theorem merge_min_out (x : ℕ) (xs ys : List ℕ) (h_min_in_xs : ∀ y ∈ xs, 
 
 -- Exercise 2.4
 theorem merge_min_out_sym(x : ℕ) (xs ys : List ℕ) (h_min_in_xs : ∀ y ∈ xs, x ≤ y) (h_min_in_ys : ∀ y ∈ ys, x ≤ y) : Merge ys (x ::xs)  = x :: Merge ys xs := by sorry
+
+open List
+
+#check List.Perm
+theorem permutation_merge (l1 l2 : List ℕ) : Merge l1 l2 ~ l1 ++ l2 := by
+  fun_induction Merge l1 l2 <;> simp_all
+  calc y :: Merge (x :: xs) ys
+    _ ~ y :: x :: (xs ++ ys) := by
+      apply List.Perm.cons
+      apply ih1
+    _ ~ x :: y :: (xs ++ ys) := by apply List.Perm.swap
+    _ ~ x :: y :: (ys ++ xs) := by
+      repeat apply List.Perm.cons
+      grind
+    _ ~ x :: (y :: ys ++ xs) := by grind
+    _ ~ x :: (xs ++ y :: ys) := by grind
